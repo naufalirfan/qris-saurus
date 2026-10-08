@@ -21,7 +21,13 @@ const app = new Elysia()
 
 // Serve the built Vite client (dist/client) so the API and the UI share one
 // origin. Unknown paths fall back to index.html for client-side routing.
-const CLIENT_DIR = join(process.cwd(), "dist/client");
+// ponytail: on Vercel the function cwd is the repo root, so the build output
+// may sit under the root-directory path — probe both, upgrade to a single
+// path once the layout is confirmed.
+const CLIENT_DIR = [
+  join(process.cwd(), "dist/client"),
+  join(process.cwd(), "examples/elysiajs/dist/client"),
+].find((dir) => existsSync(join(dir, "index.html"))) ?? join(process.cwd(), "dist/client");
 const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
