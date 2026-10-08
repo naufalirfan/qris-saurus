@@ -1,7 +1,7 @@
 import { validate } from "qris-saurus";
 import type { AppConfig, PaymentMode } from "../types";
 
-const allowedModes: PaymentMode[] = ["auto", "local", "midtrans", "xendit", "duitku"];
+const allowedModes: PaymentMode[] = ["auto", "local", "midtrans", "xendit", "duitku", "doku"];
 
 function normalizeEnvValue(value: string): string {
   const trimmed = value.trim();
@@ -46,6 +46,11 @@ export function loadConfig(): AppConfig {
   const duitkuReturnUrl = optionalEnv("DUITKU_RETURN_URL");
   const duitkuCallbackUrl = optionalEnv("DUITKU_CALLBACK_URL");
   const xenditCallbackToken = optionalEnv("XENDIT_CALLBACK_TOKEN");
+  const dokuClientId = optionalEnv("DOKU_CLIENT_ID");
+  const dokuClientSecret = optionalEnv("DOKU_CLIENT_SECRET");
+  const dokuPrivateKey = optionalEnv("DOKU_PRIVATE_KEY");
+  const dokuMerchantId = optionalEnv("DOKU_MERCHANT_ID");
+  const dokuTerminalId = optionalEnv("DOKU_TERMINAL_ID");
 
   const config: AppConfig = {
     port: Number(process.env.PORT ?? 3000),
@@ -80,6 +85,18 @@ export function loadConfig(): AppConfig {
     };
   }
 
+  if (dokuClientId && dokuClientSecret && dokuPrivateKey && dokuMerchantId && dokuTerminalId) {
+    config.gateway.doku = {
+      clientId: dokuClientId,
+      clientSecret: dokuClientSecret,
+      privateKey: dokuPrivateKey,
+      merchantId: dokuMerchantId,
+      terminalId: dokuTerminalId,
+      sandbox: process.env.DOKU_SANDBOX !== "false",
+      webhookPath: "/webhooks/doku",
+    };
+  }
+
   if (paymentMode === "midtrans" && !config.gateway.midtrans) {
     throw new Error("PAYMENT_MODE=midtrans requires MIDTRANS_SERVER_KEY");
   }
@@ -95,6 +112,12 @@ export function loadConfig(): AppConfig {
   if (paymentMode === "duitku" && !config.gateway.duitku) {
     throw new Error(
       "PAYMENT_MODE=duitku requires DUITKU_MERCHANT_CODE, DUITKU_MERCHANT_KEY, DUITKU_RETURN_URL, and DUITKU_CALLBACK_URL",
+    );
+  }
+
+  if (paymentMode === "doku" && !config.gateway.doku) {
+    throw new Error(
+      "PAYMENT_MODE=doku requires DOKU_CLIENT_ID, DOKU_CLIENT_SECRET, DOKU_PRIVATE_KEY, DOKU_MERCHANT_ID, and DOKU_TERMINAL_ID",
     );
   }
 

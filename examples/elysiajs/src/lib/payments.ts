@@ -1,5 +1,6 @@
 import {
   detectProvider,
+  dokuAdapter,
   duitkuAdapter,
   listProviders,
   makeDynamic,
@@ -43,6 +44,15 @@ function resolveWebhookPaymentStatus(provider: WebhookProvider, payload: Record<
     return "pending";
   }
 
+  if (provider === "doku") {
+    const statusCode = String(payload.latestTransactionStatus ?? payload.transactionStatus ?? "03");
+    if (statusCode === "00") return "paid";
+    if (statusCode === "04") return "refunded";
+    if (statusCode === "05") return "cancelled";
+    if (statusCode === "06" || statusCode === "07") return "failed";
+    return "pending";
+  }
+
   const statusCode = String(payload.statusCode ?? payload.status_code ?? "01");
   if (statusCode === "00") return "paid";
   if (statusCode === "02") return "cancelled";
@@ -50,7 +60,7 @@ function resolveWebhookPaymentStatus(provider: WebhookProvider, payload: Record<
 }
 
 function chooseGatewayMode(config: AppConfig): Exclude<PaymentMode, "auto" | "local"> | null {
-  if (config.paymentMode === "midtrans" || config.paymentMode === "xendit" || config.paymentMode === "duitku") {
+  if (config.paymentMode === "midtrans" || config.paymentMode === "xendit" || config.paymentMode === "duitku" || config.paymentMode === "doku") {
     return config.paymentMode;
   }
 
@@ -101,6 +111,15 @@ async function createGatewayPayment(order: Order, config: AppConfig): Promise<Ga
       source: "api",
       mode,
       result: await duitkuAdapter.createDynamicQr(options, config.gateway.duitku),
+    };
+  }
+
+  if (mode === "doku" && config.gateway.doku) {
+    return {
+      provider: "doku",
+      source: "api",
+      mode,
+      result: await dokuAdapter.createDynamicQr(options, config.gateway.doku),
     };
   }
 
@@ -175,11 +194,13 @@ export function getPaymentCapabilities(config: AppConfig) {
       midtrans: Boolean(config.gateway.midtrans),
       xendit: Boolean(config.gateway.xendit),
       duitku: Boolean(config.gateway.duitku),
+      doku: Boolean(config.gateway.doku),
     },
     webhookRoutes: {
       midtrans: "/webhooks/midtrans",
       xendit: "/webhooks/xendit",
       duitku: "/webhooks/duitku",
+      doku: "/webhooks/doku",
     },
   };
 }
@@ -255,7 +276,9 @@ export async function syncPaymentStatus(order: Order, config: AppConfig): Promis
       ? await xenditAdapter.checkPaymentStatus(order.payment.gatewayOrderId ?? order.id, config.gateway.xendit)
       : order.payment.mode === "duitku" && config.gateway.duitku
         ? await duitkuAdapter.checkPaymentStatus(order.payment.gatewayOrderId ?? order.id, config.gateway.duitku)
-        : {
+        : order.payment.mode === "doku" && config.gateway.doku
+          ? await dokuAdapter.checkPaymentStatus(order.payment.gatewayOrderId ?? order.id, config.gateway.doku)
+          : {
             orderId: order.id,
             status: order.payment.status,
             amount: order.payment.amount,

@@ -1,11 +1,11 @@
 import { Elysia } from "elysia";
 import { getOrder } from "../lib/catalog";
 import { applyWebhookPaymentStatus, cancelOrderPayment, createOrderPayment, expireOrderPayment, getPaymentCapabilities, refundOrderPayment, syncPaymentStatus } from "../lib/payments";
-import { duitkuAdapter, midtransAdapter, xenditAdapter } from "qris-saurus";
+import { dokuAdapter, duitkuAdapter, midtransAdapter, xenditAdapter } from "qris-saurus";
 import type { MidtransWebhookPayload } from "qris-saurus";
 import type { AppConfig } from "../types";
 
-function getXenditHeaders(request: Request): Record<string, string | string[] | undefined> {
+function getHeaders(request: Request): Record<string, string | string[] | undefined> {
   const headers: Record<string, string | string[] | undefined> = {};
   request.headers.forEach((value, key) => {
     headers[key] = value;
@@ -188,7 +188,7 @@ export function createPaymentRoutes(config: AppConfig) {
         return { error: { message: "Xendit gateway or callback token is not configured" } };
       }
 
-      const valid = xenditAdapter.verifyWebhook(getXenditHeaders(request), config.webhook.xenditCallbackToken);
+      const valid = xenditAdapter.verifyWebhook(getHeaders(request), config.webhook.xenditCallbackToken);
       if (!valid) {
         set.status = 403;
         return { error: { message: "Invalid Xendit callback token" } };
@@ -226,6 +226,31 @@ export function createPaymentRoutes(config: AppConfig) {
         const order = getOrder(orderId);
         const updatedOrder = applyWebhookPaymentStatus(order, "duitku", payload);
         return { data: { provider: "duitku", orderId, paymentStatus: updatedOrder.payment?.status, orderStatus: updatedOrder.status } };
+      } catch (error) {
+        set.status = 404;
+        return { error: { message: error instanceof Error ? error.message : "Order not found" } };
+      }
+    })
+    .post("/doku", ({ body, request, set }) => {
+      if (!config.gateway.doku) {
+        set.status = 400;
+        return { error: { message: "Doku gateway is not configured" } };
+      }
+
+      const payload = body as Record<string, unknown>;
+      const parsedWebhook = dokuAdapter.parseWebhook(payload, config.gateway.doku, getHeaders(request), {
+        throwOnInvalid: false,
+      });
+      if (!parsedWebhook.valid) {
+        set.status = 403;
+        return { error: { message: "Invalid Doku webhook signature" } };
+      }
+
+      const orderId = parsedWebhook.orderId;
+      try {
+        const order = getOrder(orderId);
+        const updatedOrder = applyWebhookPaymentStatus(order, "doku", payload);
+        return { data: { provider: "doku", orderId, paymentStatus: updatedOrder.payment?.status, orderStatus: updatedOrder.status } };
       } catch (error) {
         set.status = 404;
         return { error: { message: error instanceof Error ? error.message : "Order not found" } };

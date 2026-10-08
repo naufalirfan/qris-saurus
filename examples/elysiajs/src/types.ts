@@ -1,5 +1,6 @@
 import type {
   ApiQrResult,
+  DokuConfig,
   DuitkuConfig,
   DynamicResult,
   MidtransConfig,
@@ -8,7 +9,7 @@ import type {
   XenditConfig,
 } from "qris-saurus";
 
-export type PaymentMode = "auto" | "local" | "midtrans" | "xendit" | "duitku";
+export type PaymentMode = "auto" | "local" | "midtrans" | "xendit" | "duitku" | "doku";
 
 export interface Product {
   id: string;
@@ -72,10 +73,11 @@ export interface AppConfig {
     midtrans?: MidtransConfig;
     xendit?: XenditConfig;
     duitku?: DuitkuConfig;
+    doku?: DokuConfig;
   };
 }
 
-export type WebhookProvider = "midtrans" | "xendit" | "duitku";
+export type WebhookProvider = "midtrans" | "xendit" | "duitku" | "doku";
 
 export interface GatewayPaymentResult {
   provider: string;
