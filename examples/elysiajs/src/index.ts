@@ -2,7 +2,7 @@ import { existsSync, statSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { extname, join } from "node:path";
 import { loadConfig } from "./lib/config";
-import { createApp } from "./app";
+import { createApp } from "./create-app";
 
 const config = loadConfig();
 const app = createApp(config);
