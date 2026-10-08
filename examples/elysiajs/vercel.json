@@ -1,11 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "bunVersion": "1.x",
-  "buildCommand": "bun run build:client",
-  "functions": {
-    "api/index.ts": {
-      "includeFiles": "dist/client/**"
-    }
-  },
-  "rewrites": [{ "source": "/(.*)", "destination": "/api/index" }]
+  "buildCommand": "bun run build:client"
 }
