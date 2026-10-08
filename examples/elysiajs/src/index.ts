@@ -6,7 +6,6 @@ import { loadConfig } from "./lib/config";
 import { catalogRoutes } from "./routes/catalog";
 import { orderRoutes } from "./routes/orders";
 import { createPaymentRoutes } from "./routes/payments";
-import { orders } from "./data/orders";
 
 const config = loadConfig();
 
@@ -14,7 +13,6 @@ const app = new Elysia()
   .get("/health", () => ({
     data: { status: "ok", paymentMode: config.paymentMode },
   }))
-  .get("/orders", () => ({ data: Array.from(orders.values()).reverse() }))
   .use(catalogRoutes)
   .use(orderRoutes)
   .use(createPaymentRoutes(config));
