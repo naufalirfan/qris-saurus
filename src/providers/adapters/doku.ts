@@ -328,6 +328,7 @@ export class DokuAdapter implements GatewayAdapter {
   private async request<T>(url: string, init: RequestInit): Promise<T> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), DEFAULT_FETCH_TIMEOUT_MS);
+    const host = new URL(url).host;
 
     try {
       const response = await fetch(url, { ...init, signal: controller.signal });
@@ -336,7 +337,7 @@ export class DokuAdapter implements GatewayAdapter {
       if (!contentType.includes("application/json")) {
         await response.text();
         throw new Error(
-          `DOKU error [${response.status}]: ${sanitizeProviderMessage(response.statusText)}`,
+          `DOKU error [${response.status}] (${host}): ${sanitizeProviderMessage(response.statusText)}`,
         );
       }
 
@@ -344,7 +345,7 @@ export class DokuAdapter implements GatewayAdapter {
 
       if (!response.ok || !responseCodeOk(data.responseCode)) {
         const msg = sanitizeProviderMessage(data.responseMessage ?? data.message ?? response.statusText);
-        throw createProviderError(`DOKU error [${response.status}]: ${msg}`, data);
+        throw createProviderError(`DOKU error [${response.status}] (${host}): ${msg}`, data);
       }
 
       return data;
