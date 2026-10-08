@@ -1,11 +1,23 @@
+import { Elysia } from "elysia";
 import { existsSync, statSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { extname, join } from "node:path";
 import { loadConfig } from "./lib/config";
-import { createApp } from "./create-app";
+import { catalogRoutes } from "./routes/catalog";
+import { orderRoutes } from "./routes/orders";
+import { createPaymentRoutes } from "./routes/payments";
+import { orders } from "./data/orders";
 
 const config = loadConfig();
-const app = createApp(config);
+
+const app = new Elysia()
+  .get("/health", () => ({
+    data: { status: "ok", paymentMode: config.paymentMode },
+  }))
+  .get("/orders", () => ({ data: Array.from(orders.values()).reverse() }))
+  .use(catalogRoutes)
+  .use(orderRoutes)
+  .use(createPaymentRoutes(config));
 
 // Serve the built Vite client (dist/client) so the API and the UI share one
 // origin. Unknown paths fall back to index.html for client-side routing.
