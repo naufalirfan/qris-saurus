@@ -115,12 +115,19 @@ async function createGatewayPayment(order: Order, config: AppConfig): Promise<Ga
   }
 
   if (mode === "doku" && config.gateway.doku) {
-    return {
-      provider: "doku",
-      source: "api",
-      mode,
-      result: await dokuAdapter.createDynamicQr(options, config.gateway.doku),
-    };
+    // ponytail: diagnostik sementara — tampilkan panjang+prefix client id (bukan secret).
+    const cid = config.gateway.doku.clientId;
+    const diag = `${cid.length}:${cid.slice(0, 8)}…${cid.slice(-4)}`;
+    try {
+      return {
+        provider: "doku",
+        source: "api",
+        mode,
+        result: await dokuAdapter.createDynamicQr(options, config.gateway.doku),
+      };
+    } catch (err) {
+      throw new Error(`[cid=${diag}] ${err instanceof Error ? err.message : String(err)}`);
+    }
   }
 
   return null;
