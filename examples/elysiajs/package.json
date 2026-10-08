@@ -7,13 +7,14 @@
     "dev:api": "bun --watch src/index.ts",
     "dev:client": "bunx vite",
     "build:client": "bunx vite build",
+    "build": "bunx vite build",
     "start": "bun src/index.ts",
     "typecheck": "bunx tsc --noEmit"
   },
   "dependencies": {
     "@elysiajs/static": "^1.4.10",
     "elysia": "^1.1.26",
-    "qris-saurus": "file:../..",
+    "qris-saurus": "^1.1.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-router-dom": "^7.15.0",

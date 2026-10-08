@@ -1,8 +1,12 @@
 import type { Order } from "../types";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 
-const PERSIST_FILE = join(process.cwd(), ".orders_db.json");
+// Vercel's filesystem is read-only except /tmp; fall back there when deployed.
+const PERSIST_FILE = process.env.VERCEL
+  ? join(tmpdir(), ".orders_db.json")
+  : join(process.cwd(), ".orders_db.json");
 
 class PersistentMap extends Map<string, Order> {
   constructor() {
