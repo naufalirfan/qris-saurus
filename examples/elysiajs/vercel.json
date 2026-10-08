@@ -1,10 +1,4 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "bunVersion": "1.x",
-  "buildCommand": "bun run build:client",
-  "functions": {
-    "src/index.ts": {
-      "includeFiles": "dist/client/**"
-    }
-  }
+  "bunVersion": "1.x"
 }
