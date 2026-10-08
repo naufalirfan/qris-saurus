@@ -460,6 +460,46 @@ describe("dokuAdapter.createPayment", () => {
     expect(result.expiresAt).toBeInstanceOf(Date);
   });
 
+  test("sends SNAP-compliant X-TIMESTAMP (ISO-8601 numeric offset, no milliseconds)", async () => {
+    const { privateKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
+    const pem = privateKey.export({ type: "pkcs8", format: "pem" }).toString();
+    let requestTimestamp: string | undefined;
+
+    globalThis.fetch = (async (input, init) => {
+      if (String(input).includes("/authorization/v1/access-token/b2b")) {
+        return jsonResponse({ responseCode: "2007300", accessToken: "doku-token-ts", expiresIn: "900" });
+      }
+      requestTimestamp = (init?.headers as Record<string, string>)["X-TIMESTAMP"];
+      return jsonResponse({
+        responseCode: "2002700",
+        responseMessage: "Successful",
+        virtualAccountData: {
+          partnerServiceId: "   19008",
+          customerNo: "0",
+          virtualAccountNo: "   190080",
+          virtualAccountName: "Amin",
+          trxId: "INV-DOKU-TS",
+          totalAmount: { value: "50000.00", currency: "IDR" },
+        },
+      });
+    }) as typeof fetch;
+
+    await dokuAdapter.createPayment(
+      { method: "virtual_account", orderId: "INV-DOKU-TS", amount: 50000, bank: "bca", customerName: "Amin" },
+      {
+        clientId: "BRN-TEST-UNIQUE-DOKU-TS",
+        clientSecret: "doku-secret",
+        privateKey: pem,
+        merchantId: "47435",
+        terminalId: "A01",
+        virtualAccountPartnerServiceId: "19008",
+        sandbox: true,
+      },
+    );
+
+    expect(requestTimestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+07:00$/);
+  });
+
   test("requires DOKU VA partner service ID before creating virtual account", async () => {
     const { privateKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
     const pem = privateKey.export({ type: "pkcs8", format: "pem" }).toString();

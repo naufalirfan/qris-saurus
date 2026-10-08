@@ -199,8 +199,13 @@ function createProviderError(message: string, cause?: unknown): Error {
   return error;
 }
 
+// SNAP BI menuntut X-TIMESTAMP berformat ISO-8601 dengan offset numerik dan tanpa
+// milidetik (mis. 2026-10-08T19:45:09+07:00). toISOString() mengirim "…Z" + milidetik
+// sehingga DOKU menolaknya dengan "Invalid Field Format X-TIMESTAMP".
+const SNAP_WIB_OFFSET_MS = 7 * 60 * 60 * 1000;
+
 function timestamp(): string {
-  return new Date().toISOString();
+  return new Date(Date.now() + SNAP_WIB_OFFSET_MS).toISOString().replace(/\.\d{3}Z$/, "+07:00");
 }
 
 function randomExternalId(): string {

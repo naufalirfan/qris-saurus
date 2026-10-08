@@ -7,7 +7,7 @@
       "dependencies": {
         "@elysiajs/static": "^1.4.10",
         "elysia": "^1.1.26",
-        "qris-saurus": "file:./vendor/qris-saurus-1.1.1.tgz",
+        "qris-saurus": "file:./vendor/qris-saurus-1.1.2.tgz",
         "react": "^19.2.5",
         "react-dom": "^19.2.5",
         "react-router-dom": "^7.15.0",
@@ -195,7 +195,7 @@
 
     "qrcode": ["qrcode@1.5.4", "", { "dependencies": { "dijkstrajs": "^1.0.1", "pngjs": "^5.0.0", "yargs": "^15.3.1" }, "bin": { "qrcode": "bin/qrcode" } }, "sha512-1ca71Zgiu6ORjHqFBDpnSMTR2ReToX4l1Au1VFLyVeBTFavzQnv5JxMFr3ukHVKpSrSA2MCk0lNJSykjUfz7Zg=="],
 
-    "qris-saurus": ["qris-saurus@./vendor/qris-saurus-1.1.1.tgz", { "dependencies": { "qrcode": "^1.5.4" }, "bin": { "qris-saurus": "dist/cli.js" } }, "sha512-frK7lkO5de3jRHj/AjE35dwege8OHraOmyyLlSzV3xFVpkMAUPMxuF06i1pJ5kQI6fBQFFI0tkV6WeUWEGq3pg=="],
+    "qris-saurus": ["qris-saurus@./vendor/qris-saurus-1.1.2.tgz", { "dependencies": { "qrcode": "^1.5.4" }, "bin": { "qris-saurus": "dist/cli.js" } }, "sha512-RdhRfXA6hIHmtUKUuAJlZ62FrvGGbM53/we1bhenn3HPNO68Hb8VmsojQJ9Ye26LMzzCUUW1WkkQBieGW9nffw=="],
 
     "react": ["react@19.2.5", "", {}, "sha512-llUJLzz1zTUBrskt2pwZgLq59AemifIftw4aB7JxOqf1HY2FDaGDxgwpAPVzHU1kdWabH7FauP4i1oEeer2WCA=="],
 
